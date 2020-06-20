@@ -33,7 +33,6 @@ var loadTasks = function() {
 
   // loop over object properties
   $.each(tasks, function(list, arr) {
-    console.log(list, arr);
     // then loop over sub-array
     arr.forEach(function(task) {
       createTask(task.text, task.date, list);
@@ -44,6 +43,29 @@ var loadTasks = function() {
 var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
+
+// Edit element title by clicking on it
+$(".list-group").on("click", "p", function() {
+  var text = $(this).text().trim();
+  var textInput = $("<textarea>").addClass("form-control").val(text);
+  $(this).replaceWith(textInput);
+  textInput.trigger("focus");
+});
+
+// Save editted element when clicking away ("blur")
+$(".list-group").on("blur", "textarea", function() {
+  var text = $(this).val().trim();
+  var status = $(this).closest(".list-group").attr("id").replace("list-", "");
+  var index = $(this).closest(".list-group-item").index();
+
+  // Update the tasts array
+  tasks[status][index].text = text;
+  saveTasks();
+
+  // Recreate p element back from the text area
+  var taskP = $("<p>").addClass("m-1").text(text);
+  $(this).replaceWith(taskP);
+});
 
 
 
