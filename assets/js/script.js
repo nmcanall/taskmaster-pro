@@ -1,5 +1,8 @@
 var tasks = {};
 
+
+
+// Build a new task
 var createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
@@ -18,6 +21,9 @@ var createTask = function(taskText, taskDate, taskList) {
   $("#list-" + taskList).append(taskLi);
 };
 
+
+
+// Load tasks when page initiates
 var loadTasks = function() {
   tasks = JSON.parse(localStorage.getItem("tasks"));
 
@@ -40,9 +46,14 @@ var loadTasks = function() {
   });
 };
 
+
+
+// Helper method to save tasks to local storage
 var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
+
+
 
 // Edit element title by clicking on it
 $(".list-group").on("click", "p", function() {
@@ -67,6 +78,31 @@ $(".list-group").on("blur", "textarea", function() {
   $(this).replaceWith(taskP);
 });
 
+
+
+// Edit date by clicking on it
+$(".list-group").on("click", "span", function() {
+  // Get current text
+  var date = $(this).text().trim();
+  var dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
+  $(this).replaceWith(dateInput);
+  dateInput.trigger("focus");
+});
+
+// Save new date when clicking away ("blur")
+$(".list-group").on("blur", "input", function() {
+  var date = $(this).val().trim();
+  var status = $(this).closest(".list-group").attr("id").replace("list-", "");
+  var index = $(this).closest(".list-group-item").index();
+
+  // Update the tasts array
+  tasks[status][index].date = date;
+  saveTasks();
+
+  // Recreate p element back from the text area
+  var taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(date);
+  $(this).replaceWith(taskSpan);
+});
 
 
 
@@ -104,6 +140,8 @@ $("#task-form-modal .btn-primary").click(function() {
   }
 });
 
+
+
 // remove all tasks
 $("#remove-tasks").on("click", function() {
   for (var key in tasks) {
@@ -112,6 +150,8 @@ $("#remove-tasks").on("click", function() {
   }
   saveTasks();
 });
+
+
 
 // load tasks for the first time
 loadTasks();
