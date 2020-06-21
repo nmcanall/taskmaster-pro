@@ -6,16 +6,14 @@ var tasks = {};
 var createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
-  var taskSpan = $("<span>")
-    .addClass("badge badge-primary badge-pill")
-    .text(taskDate);
-  var taskP = $("<p>")
-    .addClass("m-1")
-    .text(taskText);
+  var taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(taskDate);
+  var taskP = $("<p>").addClass("m-1").text(taskText);
 
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  // Audit tasks to see if past due or two days out
+  auditTask(taskLi);
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
@@ -86,11 +84,17 @@ $(".list-group").on("click", "span", function() {
   var date = $(this).text().trim();
   var dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
   $(this).replaceWith(dateInput);
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function() {
+      $(this).trigger("change")
+    }
+  });
   dateInput.trigger("focus");
 });
 
-// Save new date when clicking away ("blur")
-$(".list-group").on("blur", "input", function() {
+// Save new date when a date is selected ("change")
+$(".list-group").on("change", "input", function() {
   var date = $(this).val().trim();
   var status = $(this).closest(".list-group").attr("id").replace("list-", "");
   var index = $(this).closest(".list-group-item").index();
@@ -102,6 +106,9 @@ $(".list-group").on("blur", "input", function() {
   // Recreate p element back from the text area
   var taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(date);
   $(this).replaceWith(taskSpan);
+
+  // Audit tasks for overdue or upcoming dates
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 
@@ -203,6 +210,34 @@ $("#trash").droppable({
     // console.log("out");
   }
 });
+
+
+
+// Datepicker functionality
+$("#modalDueDate").datepicker( {
+  minDate: 1
+});
+
+
+
+// Audit upcoming tasks
+var auditTask = function(taskEl) {
+  var date = $(taskEl).find("span").text().trim();
+  var time = moment(date, "L").set("hour", 17);
+  
+  // Remove any old classes from element
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+  // Apply danger class if overdue
+  if(moment().isAfter(time)) {
+    $(taskEl).addClass("list-group-item-danger");
+  }
+
+  // Apply warning class if it is 2 days out
+  else if(Math.abs(moment().diff(time, "days")) <= 2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+};
 
 
 
