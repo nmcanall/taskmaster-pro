@@ -156,7 +156,6 @@ $("#remove-tasks").on("click", function() {
 // Draggable functionality
 $(".card .list-group").sortable({
   connectWith: $(".card .list-group"),
-  scroll: false,
   tolerance: "pointer",
   helper: "clone",
   activate: function(event) {
@@ -184,6 +183,24 @@ $(".card .list-group").sortable({
     var arrName = $(this).attr("id").replace("list-", "");
     tasks[arrName] = tempArr;
     saveTasks();
+  }
+});
+
+
+
+// Drop into trash functionality
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+    // saveTasks() called because drop automatically calls sortable
+  },
+  over: function(event, ui) {
+    // console.log("over");
+  },
+  out: function(event, ui) {
+    // console.log("out");
   }
 });
 
